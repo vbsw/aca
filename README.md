@@ -1,7 +1,7 @@
 # aca
 
 ## About
-aca stands for Abstract C Application. It is a C library to be used to develop desktop applications. aca is published on <https://github.com/vbsw/aca>.
+aca stands for Abstract C Application. It is a C library to to develop desktop applications. aca is published on <https://github.com/vbsw/aca>.
 
 ## Copyright
 Copyright 2026, Vitali Baumtrok (vbsw@mailbox.org).
@@ -14,10 +14,10 @@ libvb is distributed in the hope that it will be useful, but WITHOUT ANY WARRANT
 0.0.0 [experimental]
 
 ## Usage
-These C files are not ment to be compiled to a library. Instead each file is its own module and should be used in a binding.
+These C file are ment to be used in a binding. Instead each file is its own module and should be used in a binding.
 
 ## Compile to library
-If you want to compile this code to a library, you can do this.
+If you want, you can compile this code to a library. (Only Linux is supported for now.)
 
 Switch to this project directory and execute
 
@@ -28,7 +28,7 @@ You find the static labrary (libvb.a) and dynamic labrary (libvb.so) in
 	./build/release.linux
 
 **Tests**  
-Switch to your project directory and check out the "development" branch with
+Switch to this project directory and check out the "development" branch with
 
 	git switch development
 
