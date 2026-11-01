@@ -9,27 +9,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
+#include <aca/batch.h>
 
-// cross module
-
-typedef struct {
-	const char *name;
-	const char *vendor;
-	char *data;
-	uint32_t major, minor, patch;
-} module_t;
-
-typedef struct {
-	module_t **modules;
-	char *err_str; // must be allocated on heap
-	uint32_t modules_len, index, pass, err1, err2;
-} batch_run_t;
-
-// private
-
-typedef void (*batch_task_func_t)(batch_run_t *batch_run);
-
-// public
+typedef void (*batch_task_func_t)(aca_batch_run_t *batch_run);
 
 void aca_batch_alloc(void ***const data, const uint32_t data_len) {
 	const size_t size = (size_t)data_len*2*sizeof(void*);
@@ -40,12 +22,12 @@ void aca_batch_alloc(void ***const data, const uint32_t data_len) {
 	}
 }
 
-void aca_batch_run(void **const data, uint32_t *const err1, uint32_t *const err2, uint32_t *const err_idx, char **const err_str, const uint32_t len, const uint32_t passes) {
-	batch_run_t batch_run = {(module_t**)&data[len], NULL, len, 0, 0, 0, 0};
+void aca_batch_run(void **const data, const uint32_t data_len, const int32_t passes, uint32_t *const err1, uint32_t *const err2, uint32_t *const err_idx, char **const err_str) {
+	aca_batch_run_t batch_run = {(aca_module_t**)&data[data_len], NULL, data_len, 0, 0, 0, 0};
 	// main
 	while (batch_run.pass < passes) {
 		// forward
-		for (batch_run.index = 0; batch_run.index < len && !batch_run.err1; batch_run.index++) {
+		for (batch_run.index = 0; batch_run.index < data_len && !batch_run.err1; batch_run.index++) {
 			const batch_task_func_t batch_task = (batch_task_func_t)data[batch_run.index];
 			if (batch_task) {
 				*err_idx = batch_run.index;
@@ -54,7 +36,7 @@ void aca_batch_run(void **const data, uint32_t *const err1, uint32_t *const err2
 		}
 		// backwards
 		if (!batch_run.err1 && ++batch_run.pass < passes) {
-			batch_run.index = len - 1;
+			batch_run.index = data_len - 1;
 			while (!batch_run.err1) {
 				const batch_task_func_t batch_task = (batch_task_func_t)data[batch_run.index];
 				if (batch_task) {
@@ -75,7 +57,10 @@ void aca_batch_run(void **const data, uint32_t *const err1, uint32_t *const err2
 	// error handling
 	if (batch_run.err1) {
 		batch_run.pass = -(batch_run.pass + 1);
-		batch_run.index = len - 1;
+		if (batch_run.pass == -1)
+			batch_run.index = *err_idx;
+		else
+			batch_run.index = data_len - 1;
 		while (true) {
 			const batch_task_func_t batch_task = (batch_task_func_t)data[batch_run.index];
 			if (batch_task) {

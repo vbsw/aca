@@ -19,16 +19,17 @@ typedef struct {
 	const char *vendor;
 	char *data;
 	uint32_t major, minor, patch;
-} module_t;
+} aca_module_t;
 
 typedef struct {
-	module_t **modules;
-	char *err_str; // must be allocated on heap
-	uint32_t modules_len, index, pass, err1, err2;
-} batch_run_t;
+	aca_module_t **modules;
+	char *err_str;
+	uint32_t modules_len, index, err1, err2;
+	int32_t pass;
+} aca_batch_run_t;
 
 void aca_batch_alloc(void ***data, uint32_t data_len);
-void aca_batch_run(void **data, uint32_t *err1, uint32_t *err2, uint32_t *err_idx, char **err_str, uint32_t len, uint32_t passes);
+void aca_batch_run(void **data, uint32_t data_len, int32_t passes, uint32_t *err1, uint32_t *err2, uint32_t *err_idx, char **err_str);
 void aca_batch_free(void **data);
 
 #ifdef __cplusplus
