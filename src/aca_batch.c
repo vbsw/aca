@@ -9,9 +9,28 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
-#include <aca/batch.h>
+
+// cross module
+
+typedef struct {
+	const char *name;
+	const char *vendor;
+	char *data;
+	uint32_t major, minor, patch;
+} aca_module_t;
+
+typedef struct {
+	aca_module_t **modules;
+	char *err_str;
+	uint32_t modules_len, index, err1, err2;
+	int32_t pass;
+} aca_batch_run_t;
+
+// private
 
 typedef void (*batch_task_func_t)(aca_batch_run_t *batch_run);
+
+// public
 
 void aca_batch_alloc(void ***const data, const uint32_t data_len) {
 	const size_t size = (size_t)data_len*2*sizeof(void*);
