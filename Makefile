@@ -1,5 +1,6 @@
 PROJECT_ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 BUILD_DIR    := $(abspath $(CURDIR))
+BUILD_SUB    ?= linux
 
 ifeq ($(abspath $(PROJECT_ROOT)),$(BUILD_DIR))
 	CREATE_BUILD_DIR := yes
@@ -9,48 +10,53 @@ endif
 
 ifeq ($(BUILD_MODE),debug)
 	ifeq ($(CREATE_BUILD_DIR),yes)
-		BUILD_DIR := $(BUILD_DIR)/build/debug.linux/
+		BUILD_DIR := $(BUILD_DIR)/build/debug.$(BUILD_SUB)
 	endif
-	CFLAGS += -g -O1 -Wall -Wextra -fno-omit-frame-pointer
+	CFLAGS += -g -O1 -Wall -Wextra -fsanitize=address,undefined -fno-omit-frame-pointer
+	LDFLAGS += -fsanitize=address,undefined
 else
 	ifeq ($(CREATE_BUILD_DIR),yes)
-		BUILD_DIR := $(BUILD_DIR)/build/release.linux/
+		BUILD_DIR := $(BUILD_DIR)/build/release.$(BUILD_SUB)
 	endif
 	CFLAGS += -O2
 endif
 
+TARGET        := $(BUILD_DIR)/acatest
 BUILD_OBJ_DIR := $(BUILD_DIR)/obj/
 
-SRC  := $(wildcard $(PROJECT_ROOT)src/*.c)
-OBJS := $(patsubst $(PROJECT_ROOT)src/%.c,$(BUILD_OBJ_DIR)%.o,$(SRC))
+SRC_LIB  := $(wildcard $(PROJECT_ROOT)src/*.c)
+SRC_TST  := $(wildcard $(PROJECT_ROOT)test/*.c)
 
-STATIC_LIB = $(BUILD_DIR)/libaca.a
-SHARED_LIB = $(BUILD_DIR)/libaca.so
+OBJS_LIB := $(patsubst $(PROJECT_ROOT)src/%.c,  $(BUILD_OBJ_DIR)%.o, $(SRC_LIB))
+OBJS_TST := $(patsubst $(PROJECT_ROOT)test/%.c, $(BUILD_OBJ_DIR)%.o, $(SRC_TST))
 
-# shared library
-CFLAGS += -fPIC
+
 # dependency tracking
 CFLAGS += -MMD -MP
 
-.PHONY: all static shared clean
+.PHONY: all test clean
 
-all: static shared
+all: $(TARGET)
 
-static: $(STATIC_LIB)
+test: $(TARGET)
+	$(TARGET)
 
-shared: $(SHARED_LIB)
+$(TARGET): $(OBJS_LIB) $(OBJS_TST)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS_LIB) $(OBJS_TST)
 
-$(STATIC_LIB): $(OBJS)
-	ar rcs $@ $^
+$(OBJS_LIB): $(BUILD_OBJ_DIR)%.o: $(PROJECT_ROOT)src/%.c
+	@mkdir -p $(dir $@)
+	$(CC) -I$(PROJECT_ROOT)include -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
 
-$(SHARED_LIB): $(OBJS)
-	$(CC) -shared $(LDFLAGS) -o $@ $^
+$(OBJS_TST): $(BUILD_OBJ_DIR)%.o: $(PROJECT_ROOT)test/%.c
+	@mkdir -p $(dir $@)
+	$(CC) -I$(PROJECT_ROOT)include -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
 
 $(OBJS): $(BUILD_OBJ_DIR)%.o: $(PROJECT_ROOT)src/%.c
 	@mkdir -p $(dir $@)
 	$(CC) -I$(PROJECT_ROOT)include -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
 
--include $(OBJS:.o=.d)
+-include $(OBJS_LIB:.o=.d) $(OBJS_TST:.o=.d)
 
 clean:
 	rm -rf $(BUILD_DIR)
