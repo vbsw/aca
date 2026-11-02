@@ -6,12 +6,15 @@
  */
 
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
 #include <aca/batch.h>
 
+// private
+
 typedef void (*batch_task_func_t)(aca_batch_run_t *batch_run);
+
+// public
 
 void aca_batch_alloc(void ***const data, const uint32_t data_len) {
 	const size_t size = (size_t)data_len*2*sizeof(void*);

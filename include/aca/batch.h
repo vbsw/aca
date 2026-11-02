@@ -14,6 +14,8 @@
 extern "C" {
 #endif
 
+// cross module
+
 typedef struct {
 	const char *name;
 	const char *vendor;
@@ -27,6 +29,8 @@ typedef struct {
 	uint32_t modules_len, index, err1, err2;
 	int32_t pass;
 } aca_batch_run_t;
+
+// public
 
 void aca_batch_alloc(void ***data, uint32_t data_len);
 void aca_batch_run(void **data, uint32_t data_len, int32_t passes, uint32_t *err1, uint32_t *err2, uint32_t *err_idx, char **err_str);
