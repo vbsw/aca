@@ -15,12 +15,14 @@
 #define PRINT_RESULT_CLM_B(unt) if (!err_line) printf("%-8s PASS\n", unt); else printf("%-6s FAIL line %d\n", unt, err_line);
 
 void test_batch(int *err_line);
+void test_allocator(int *const err_line);
 
 int main(int argc, char **argv) {
 	UNUSED(argc)
 	UNUSED(argv)
 	int err_line;
 	test_batch(&err_line); PRINT_RESULT_CLM_A("batch")
+	test_allocator(&err_line); PRINT_RESULT_CLM_B("allocator")
 	printf("\n");
 
 	return 0;
