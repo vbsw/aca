@@ -6,9 +6,9 @@
  */
 
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
+#include <aca/batch.h>
 
 // cross module
 
